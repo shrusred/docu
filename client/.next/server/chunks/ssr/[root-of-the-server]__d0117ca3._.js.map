@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
-    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///Users/shruthireddy/docufam/client/app/page.tsx"],"sourcesContent":["export default function Home() {\n  return (\n    <main className=\"container\">\n      <h1 className=\"title\">\n        DocuFam – your trusted document group storage and management app\n      </h1>\n      <nav className=\"nav\">\n        <a href=\"/login\" className=\"link\">\n          Login\n        </a>\n        <span className=\"separator\">|</span>\n        <a href=\"/register\" className=\"link\">\n          Register\n        </a>\n      </nav>\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAK,WAAU;;0BACd,8OAAC;gBAAG,WAAU;0BAAQ;;;;;;0BAGtB,8OAAC;gBAAI,WAAU;;kCACb,8OAAC;wBAAE,MAAK;wBAAS,WAAU;kCAAO;;;;;;kCAGlC,8OAAC;wBAAK,WAAU;kCAAY;;;;;;kCAC5B,8OAAC;wBAAE,MAAK;wBAAY,WAAU;kCAAO;;;;;;;;;;;;;;;;;;AAM7C","debugId":null}}]
-}

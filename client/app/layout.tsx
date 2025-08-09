@@ -1,14 +1,16 @@
-// client/app/layout.tsx
+// app/layout.js
 import "../styles/global.css";
+import React from "react";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const metadata = {
+  title: "Docufam",
+  description: "your trusted document manager tool",
+};
+
+export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
     <html lang="en">
-      <body className="bg-red-500">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

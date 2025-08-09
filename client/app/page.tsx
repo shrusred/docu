@@ -1,35 +1,14 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
+// app/page.js
 export default function Home() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-
-    if (token) {
-      localStorage.setItem("token", token);
-      router.push("/dashboard"); // or wherever you want to redirect
-    }
-  }, [searchParams, router]);
-
   return (
-    <main className="container">
-      <h1 className="title">
-        DocuFam – your trusted document group storage and management app
-      </h1>
-      <nav className="nav">
-        <a href="/login" className="link">
-          Login
-        </a>
-        <span className="separator">|</span>
-        <a href="/register" className="link">
-          Register
-        </a>
-      </nav>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+      <h1 className="text-4xl font-bold text-blue-600">Tailwind is working!</h1>
+      <p className="mt-4 text-lg text-gray-700">
+        If you can see this styled, you're good to go.
+      </p>
+      <div className="mt-6 p-4 bg-white rounded shadow test-tailwind">
+        This box uses custom Tailwind class!
+      </div>
     </main>
   );
 }
