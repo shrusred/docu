@@ -1,64 +1,76 @@
-import { Request, Response } from "express";
-import mongoose from "mongoose";
-import User, { IUser, IUserMethods, IUserDocument } from "../models/User";
+import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { signToken } from "../utils/jwt";
-import { verifyToken } from "../utils/jwt";
+import User, { IUserDocument } from "../models/User";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = "1d";
 
+function signToken(payload: object) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+// Register a new user
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
 
     const existingUser = await User.findOne({ email });
     if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(409).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ email, password: hashedPassword, name });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully" });
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+// Called from authRoutes on successful local login
+export const loginUser = (req: Request, res: Response, user: IUserDocument) => {
   try {
-    const { email, password } = req.body;
-
-    const user = (await User.findOne({ email })) as mongoose.Document &
-      IUser &
-      IUserMethods;
-
-    if (!user)
-      return res.status(400).json({ message: "Invalid email or password" });
-
-    const isMatch = await bcrypt.compare(password, user.password!);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid email or password" });
-
     const token = signToken({ id: user._id });
-    const decoded = verifyToken(token); // use inside middleware, etc.
-
-    res.json({ token, message: "Logged in successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.json({
+      token,
+      message: "Logged in successfully",
+      user: { id: user._id, email: user.email },
+    });
+  } catch {
+    res.status(500).json({ message: "Failed to generate token" });
   }
 };
 
-export const googleAuthCallback = async (req: Request, res: Response) => {
+// Called from authRoutes on successful Google OAuth
+export const googleAuthCallback = (
+  req: Request,
+  res: Response,
+  user: IUserDocument
+) => {
   try {
-    const user = req.user as IUserDocument;
-
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
-
+    const token = signToken({ id: user._id });
+    // Redirect to frontend with token (adjust frontend URL as needed)
     res.redirect(`http://localhost:3000?token=${token}`);
-  } catch (err) {
-    res.status(500).json({ message: "Google OAuth failed" });
+  } catch {
+    res.status(500).json({ message: "Failed to generate token" });
   }
+};
+
+// Protected profile route handler
+export const getProfile = (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+  const user = req.user as IUserDocument;
+  res.json({ user: { id: user._id, email: user.email } });
+};
+
+// Logout route (for JWT, usually handled client-side by deleting token)
+export const logoutUser = (req: Request, res: Response) => {
+  // Just respond OK; no server-side token invalidation here
+  res.json({ message: "Logged out successfully" });
 };

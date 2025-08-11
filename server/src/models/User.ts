@@ -49,4 +49,4 @@ const User = model<IUser, mongoose.Model<IUser, {}, IUserMethods>>(
 export default User;
 export type IUserDocument = mongoose.Document & IUser & IUserMethods;
 
-export { IUser, IUserMethods };
+// export { IUser, IUserMethods };
