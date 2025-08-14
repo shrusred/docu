@@ -31,6 +31,8 @@ function LoginForm() {
       setIsLoading(false);
     }
   };
+  // Test environment variable
+  //console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
