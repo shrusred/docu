@@ -1,0 +1,78 @@
+/* components/Auth.LoginForm.module.css - Brand colors and responsive sizing only */
+
+.label {
+  font-size: clamp(0.875rem, 2vw, 0.9375rem);
+  color: var(--color-dark-ink-blue);
+  margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+}
+
+.input {
+  padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  border: 1px solid var(--color-light-med-grey-blue);
+  border-radius: clamp(0.375rem, 1.5vw, 0.5rem);
+  background-color: var(--color-very-light-grey-blue);
+  color: var(--color-dark-ink-blue);
+}
+
+.input:focus {
+  border-color: var(--color-teal-blue);
+  background-color: white;
+}
+
+.input:hover:not(:focus) {
+  border-color: var(--color-light-med-grey-blue-2);
+}
+
+.input::placeholder {
+  color: var(--color-mid-greyish-blue);
+  opacity: 0.8;
+}
+
+.forgotPasswordLink {
+  font-size: clamp(0.8125rem, 1.8vw, 0.875rem);
+  color: var(--color-medium-blue);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.forgotPasswordLink:hover {
+  color: var(--color-teal-blue);
+}
+
+.submitButton {
+  background-color: var(--color-teal-blue);
+  color: white;
+  padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1.5rem, 4vw, 2rem);
+  border-radius: clamp(0.375rem, 1.5vw, 0.5rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  min-height: clamp(2.75rem, 6vw, 3.25rem);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--color-medium-blue);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .input {
+    padding: clamp(0.625rem, 2vw, 0.75rem) clamp(0.875rem, 2.5vw, 1rem);
+  }
+
+  .submitButton {
+    padding: clamp(0.625rem, 2vw, 0.75rem) clamp(1.25rem, 3vw, 1.5rem);
+    min-height: clamp(2.5rem, 5vw, 2.75rem);
+  }
+}
+
+/* Desktop responsive adjustments */
+@media (min-width: 1025px) {
+  .submitButton {
+    min-height: clamp(3rem, 4vw, 3.5rem);
+  }
+}
