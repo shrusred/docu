@@ -1,124 +1,107 @@
-// components/Auth.LoginForm.tsx - Direct Tailwind classes
+// components/Auth.LoginForm.tsx
 "use client";
+
 import { useState } from "react";
-import styles from "./Auth.LoginForm.module.css";
+import { useRouter } from "next/navigation";
 
-function LoginForm() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+export default function LoginForm() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
-      console.log("Login form submitted:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Points to Express server (adjust port if needed at any point)
+      const response = await fetch("http://localhost:5001/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include", // Include cookies if backend uses them
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // backend should return: { token, user }
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+
+          // Route to protected dashboard
+          router.push("/dashboard/dashboard");
+        } else {
+          setError("No token received from server");
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Login failed");
+      }
     } catch (error) {
       console.error("Login error:", error);
+      setError("Cannot connect to server. Is your backend running?");
     } finally {
       setIsLoading(false);
     }
   };
-  // Test environment variable
-  //console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
-      {/* Email Input Group */}
-      <div className="flex flex-col space-y-2">
-        <label htmlFor="email" className={`block font-medium ${styles.label}`}>
-          Enter your email
+    <form onSubmit={handleSubmit} className="spacing-lg">
+      {error && (
+        <div className="p-3 bg-brand-coral text-white rounded text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="email">
+          Email address
         </label>
         <input
           id="email"
           type="email"
-          className={`w-full rounded-lg outline-none ${styles.input}`}
-          placeholder="your@email.com"
-          value={formData.email}
-          onChange={handleInputChange}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="form-input"
+          placeholder="Enter your email"
           required
+          disabled={isLoading}
         />
       </div>
 
-      {/* Password Input Group */}
-      <div className="flex flex-col space-y-2">
-        <label
-          htmlFor="password"
-          className={`block font-medium ${styles.label}`}
-        >
-          Enter your password
+      <div className="form-group">
+        <label className="form-label" htmlFor="password">
+          Password
         </label>
         <input
           id="password"
           type="password"
-          className={`w-full rounded-lg outline-none ${styles.input}`}
-          placeholder="••••••••"
-          value={formData.password}
-          onChange={handleInputChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="form-input"
+          placeholder="Enter your password"
           required
+          disabled={isLoading}
         />
       </div>
 
-      {/* Forgot Password Link */}
       <div className="text-right">
-        <a
-          href="/auth/forgot-password"
-          className={`underline font-medium ${styles.forgotPasswordLink}`}
-        >
-          Forgot password?
+        <a href="/auth/forgot-password" className="forgot-password-link">
+          Forgot your password?
         </a>
       </div>
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        className={`w-full font-medium rounded-lg border-none cursor-pointer ${
-          styles.submitButton
-        } ${isLoading ? "opacity-70 pointer-events-none" : ""}`}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center">
-            <svg
-              className="animate-spin mr-3 h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Signing in...
-          </div>
-        ) : (
-          "Sign In"
-        )}
+      <button type="submit" className="btn-brand-primary" disabled={isLoading}>
+        {isLoading ? "Signing in..." : "Sign in"}
       </button>
     </form>
   );
 }
-
-export default LoginForm;
