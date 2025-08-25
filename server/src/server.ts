@@ -15,6 +15,8 @@ import authRoutes from "./routes/authRoutes";
 import passport from "passport";
 import "./config/passport"; // configures Passport strategies (Google etc.)
 import mongoose from "mongoose";
+import dashboardRoutes from "./routes/dashboardRoutes";
+import documentRoutes from "./routes/documentRoutes";
 
 const app = express();
 
@@ -49,7 +51,8 @@ app.use(passport.initialize());
 
 // Routes
 app.use("/api/auth", authRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/documents", documentRoutes);
 app.get("/api/health", (req, res) => {
   res.send("✅ Server is running");
 });

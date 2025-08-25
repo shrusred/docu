@@ -1,4 +1,4 @@
-// authRoutes.ts - Updated with debugging
+// authRoutes.ts - Add the manual test route
 import express from "express";
 import passport from "passport";
 import {
@@ -51,16 +51,46 @@ router.post("/login", (req, res, next) => {
 // Google OAuth login start
 router.get(
   "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"], // <-- required
+  }),
   (req, res, next) => {
     console.log("=== Starting Google OAuth ===");
-    console.log("Request URL:", req.url);
+    console.log(
+      "Client ID:",
+      process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "..."
+    );
+    console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
     next();
-  },
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-  })
+  }
+  // passport.authenticate("google", {
+  //   scope: ["profile", "email"],
+  //   session: false,
+  // })
 );
+
+// ADD THIS: Manual Google OAuth test route (bypasses passport)
+router.get("/google-test", (req, res) => {
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID!,
+    redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
+    scope: "profile email",
+    response_type: "code",
+    access_type: "offline",
+  });
+
+  const authUrl = `https://accounts.google.com/oauth/authorize?${params.toString()}`;
+
+  console.log("=== Manual Google OAuth Test ===");
+  console.log(
+    "Client ID:",
+    process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "..."
+  );
+  console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
+  console.log("Generated URL:", authUrl);
+
+  res.redirect(authUrl);
+});
 
 // Google OAuth callback route with enhanced debugging
 router.get("/google/callback", (req, res, next) => {

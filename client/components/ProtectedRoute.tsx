@@ -51,6 +51,22 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     const checkAuth = async () => {
+      // 🚨 TESTING BYPASS - REMOVE AFTER TESTING
+      const BYPASS_PROTECTED_ROUTE = true;
+
+      if (BYPASS_PROTECTED_ROUTE) {
+        console.log(
+          "🚨 PROTECTED ROUTE BYPASSED FOR TESTING - REMOVE IN PRODUCTION!"
+        );
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      /* 
+      ===== PRODUCTION CODE - UNCOMMENT AFTER TESTING =====
+      Remove the bypass above and uncomment this section for production:
+      
       try {
         const token = jwtUtils.getToken();
 
@@ -103,6 +119,9 @@ export default function ProtectedRoute({
       } finally {
         setIsLoading(false);
       }
+      
+      ===== END PRODUCTION CODE =====
+      */
     };
 
     checkAuth();

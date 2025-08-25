@@ -1,287 +1,250 @@
+// === client/components/RecentActivityCard.tsx ===
 "use client";
 
 import React from "react";
+import {
+  Upload,
+  Share2,
+  Edit3,
+  Trash2,
+  AlertTriangle,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 
+// TODO: Move to client/types/dashboard.ts later
 interface RecentActivity {
   id: string;
-  type: "upload" | "share" | "update" | "delete" | "create";
+  type: "upload" | "share" | "update" | "delete" | "expire";
   user: string;
   action: string;
   document?: string;
   timestamp: Date;
+  metadata?: {
+    documentType?: string;
+    sharedWith?: string;
+    folderName?: string;
+  };
 }
 
 interface RecentActivityCardProps {
   activities: RecentActivity[];
-  className?: string;
+  onViewAll?: () => void;
+  maxItems?: number;
 }
 
 export default function RecentActivityCard({
   activities,
-  className = "",
+  onViewAll,
+  maxItems = 5,
 }: RecentActivityCardProps) {
-  // Icon components for different activity types
-  const UploadIcon = () => (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path
-        fillRule="evenodd"
-        d="M3 17a1 1 0 011-1h16a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L12 4.414 9.707 6.707a1 1 0 01-1.414 0z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-
-  const ShareIcon = () => (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path
-        fillRule="evenodd"
-        d="M15.75 4.5a3 3 0 11.825 2.066l-8.421 4.679a3.002 3.002 0 010 1.51l8.421 4.679a3 3 0 11-.729 1.31l-8.421-4.678a3 3 0 110-4.132l8.421-4.679a3 3 0 01-.096-.755z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-
-  const UpdateIcon = () => (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path
-        fillRule="evenodd"
-        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 17H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-
-  const DeleteIcon = () => (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path fillRule="evenodd" d="M9 2a1 1 0 000 2h6a1 1 0 100-2H9z" />
-      <path
-        fillRule="evenodd"
-        d="M10 5a2 2 0 00-2 2v1a1 1 0 002 0V7h4v1a1 1 0 102 0V7a2 2 0 00-2-2h-4zM8 11a1 1 0 012 0v6a1 1 0 11-2 0v-6zm6 0a1 1 0 10-2 0v6a1 1 0 102 0v-6z"
-      />
-      <path
-        fillRule="evenodd"
-        d="M15 5h-6l-.27 1.243a25.855 25.855 0 01.27 13.757h5a25.855 25.855 0 01.27-13.757L15 5z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-
-  const CreateIcon = () => (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path
-        fillRule="evenodd"
-        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-
-  // Get icon based on activity type
-  const getActivityIcon = (type: string) => {
+  // Get the appropriate icon for each activity type
+  const getActivityIcon = (type: RecentActivity["type"]) => {
     switch (type) {
       case "upload":
-        return <UploadIcon />;
+        return Upload;
       case "share":
-        return <ShareIcon />;
+        return Share2;
       case "update":
-        return <UpdateIcon />;
+        return Edit3;
       case "delete":
-        return <DeleteIcon />;
-      case "create":
-        return <CreateIcon />;
+        return Trash2;
+      case "expire":
+        return AlertTriangle;
       default:
-        return <UpdateIcon />;
+        return Clock;
     }
   };
 
-  // Get icon color based on activity type
-  const getActivityColor = (type: string) => {
+  // Get the appropriate color for each activity type
+  const getActivityColor = (type: RecentActivity["type"]) => {
     switch (type) {
       case "upload":
-        return "#2CA6A4"; // Teal blue
+        return "text-brand-teal";
       case "share":
-        return "#6FA8DC"; // Light-med blue
+        return "text-brand-blue";
       case "update":
-        return "#3A6EA5"; // Medium blue
+        return "text-brand-blue-light";
       case "delete":
-        return "#D9534F"; // Coral red
-      case "create":
-        return "#2CA6A4"; // Teal blue
+        return "text-brand-coral";
+      case "expire":
+        return "text-orange-500";
       default:
-        return "#7D8CA3"; // Mid greyish blue
+        return "text-brand-mid";
     }
   };
 
-  // Format timestamp
-  const formatTime = (timestamp: Date) => {
+  // Format timestamp to relative time
+  const formatRelativeTime = (timestamp: Date) => {
     const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
+    const diffInMinutes = Math.floor(
+      (now.getTime() - timestamp.getTime()) / (1000 * 60)
+    );
 
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+
     return timestamp.toLocaleDateString();
   };
 
+  // Get document type badge color
+  const getDocumentTypeBadge = (type?: string) => {
+    if (!type) return null;
+
+    const colors = {
+      Medical: "bg-red-100 text-red-800",
+      Legal: "bg-blue-100 text-blue-800",
+      Insurance: "bg-green-100 text-green-800",
+      ID: "bg-purple-100 text-purple-800",
+      Certificates: "bg-yellow-100 text-yellow-800",
+      Miscellaneous: "bg-gray-100 text-gray-800",
+    };
+
+    const colorClass =
+      colors[type as keyof typeof colors] || colors.Miscellaneous;
+
+    return (
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}
+      >
+        {type}
+      </span>
+    );
+  };
+
+  const displayedActivities = activities.slice(0, maxItems);
+
   return (
-    <div
-      className={`rounded-lg p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
-      style={{
-        background: "linear-gradient(135deg, #6FA8DC 0%, #3A6EA5 100%)",
-      }}
-    >
+    <div className="bg-white rounded-lg shadow-sm p-6 border border-brand-light-med h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Recent Activity</h2>
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-        >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path
-              fillRule="evenodd"
-              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-brand-dark">
+          Recent Activity
+        </h3>
+        {activities.length > maxItems && onViewAll && (
+          <button
+            onClick={onViewAll}
+            className="flex items-center space-x-1 text-sm text-brand-teal hover:text-brand-blue transition-colors"
+          >
+            <span>View All</span>
+            <ExternalLink size={14} />
+          </button>
+        )}
       </div>
 
       {/* Activity List */}
-      <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-        {activities.length > 0 ? (
-          activities.map((activity, index) => (
-            <div
-              key={activity.id}
-              className="flex items-start space-x-3 p-3 rounded-lg transition-all duration-200 hover:scale-105 group"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
-                animationDelay: `${index * 0.1}s`,
-              }}
-            >
-              {/* Activity Icon */}
+      <div className="flex-1 space-y-4">
+        {displayedActivities.length > 0 ? (
+          displayedActivities.map((activity) => {
+            const Icon = getActivityIcon(activity.type);
+            const iconColor = getActivityColor(activity.type);
+
+            return (
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
-                style={{
-                  backgroundColor: getActivityColor(activity.type),
-                  color: "white",
-                }}
+                key={activity.id}
+                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-brand-light transition-colors"
               >
-                {getActivityIcon(activity.type)}
-              </div>
-
-              {/* Activity Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">
-                      <span className="font-semibold">{activity.user}</span>{" "}
-                      <span className="opacity-90">{activity.action}</span>
-                      {activity.document && (
-                        <span className="font-medium text-white">
-                          {" "}
-                          {activity.document}
-                        </span>
-                      )}
-                    </p>
-                    <p
-                      className="text-xs mt-1"
-                      style={{ color: "rgba(255, 255, 255, 0.7)" }}
-                    >
-                      {formatTime(activity.timestamp)}
-                    </p>
+                {/* Activity Icon */}
+                <div className={`flex-shrink-0 mt-0.5`}>
+                  <div className="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center">
+                    <Icon size={14} className={iconColor} />
                   </div>
+                </div>
 
-                  {/* Activity Type Badge */}
-                  <span
-                    className="text-xs px-2 py-1 rounded-full font-medium ml-2 flex-shrink-0"
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                      color: "white",
-                    }}
-                  >
-                    {activity.type}
-                  </span>
+                {/* Activity Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-brand-dark-grey">
+                        <span className="font-medium text-brand-dark">
+                          {activity.user}
+                        </span>{" "}
+                        {activity.action}
+                      </p>
+
+                      {/* Document name if available */}
+                      {activity.document && (
+                        <p className="text-sm font-medium text-brand-dark mt-1">
+                          {activity.document}
+                        </p>
+                      )}
+
+                      {/* Document type badge */}
+                      {activity.metadata?.documentType && (
+                        <div className="mt-2">
+                          {getDocumentTypeBadge(activity.metadata.documentType)}
+                        </div>
+                      )}
+
+                      {/* Additional metadata */}
+                      {activity.metadata?.sharedWith && (
+                        <p className="text-xs text-brand-mid mt-1">
+                          Shared with: {activity.metadata.sharedWith}
+                        </p>
+                      )}
+
+                      {activity.metadata?.folderName && (
+                        <p className="text-xs text-brand-mid mt-1">
+                          In folder: {activity.metadata.folderName}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Timestamp */}
+                    <div className="flex-shrink-0 ml-2">
+                      <p className="text-xs text-brand-mid">
+                        {formatRelativeTime(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <div className="text-center py-8">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-            >
-              <svg
-                className="w-8 h-8 opacity-50"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  clipRule="evenodd"
-                />
-              </svg>
+          // Empty state
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-8">
+              <Clock
+                size={32}
+                className="text-brand-light-med-2 mx-auto mb-3"
+              />
+              <p className="text-sm text-brand-light-med-2 font-medium">
+                No recent activity
+              </p>
+              <p className="text-xs text-brand-mid mt-1">
+                Activity will appear here when you start using DocuFam
+              </p>
             </div>
-            <p className="text-sm opacity-80 italic">No recent activity</p>
-            <p className="text-xs opacity-60 mt-1">
-              Activity will appear here when you start using DocuFam
-            </p>
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-white border-opacity-20">
-        <div className="flex items-center justify-between">
-          <span className="text-xs opacity-75">
-            {activities.length} recent{" "}
-            {activities.length === 1 ? "activity" : "activities"}
-          </span>
-          <button
-            className="text-xs px-3 py-1 rounded-full transition-all duration-200 hover:scale-105 font-medium"
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              color: "white",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor =
-                "rgba(255, 255, 255, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor =
-                "rgba(255, 255, 255, 0.2)";
-            }}
-            onClick={() => console.log("View all activities")}
-          >
-            View All
-          </button>
+      {/* Footer with activity count */}
+      {activities.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-brand-light-med">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-brand-mid">
+              Showing {displayedActivities.length} of {activities.length}{" "}
+              activities
+            </p>
+            {activities.length > maxItems && (
+              <p className="text-xs text-brand-teal">
+                +{activities.length - maxItems} more
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Custom Scrollbar Styles */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-      `}</style>
+      )}
     </div>
   );
 }
